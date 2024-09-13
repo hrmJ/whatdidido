@@ -2,7 +2,7 @@ import { Notification } from "https://deno.land/x/deno_notify@1.4.3/ts/mod.ts";
 const homeDir = Deno.env.get("HOME") ?? Deno.env.get("USERPROFILE") ?? "./";
 const conf = {
   logFilepath: `${homeDir}/notes/dailylog.md`,
-  intervalInMinutes: 0.01,
+  intervalInMinutes: 60,
   locale: "fi-FI",
 };
 
@@ -27,7 +27,7 @@ async function addEntry(
   const encoder = new TextEncoder();
   const startTime = previousEntry.toLocaleString(locale);
   const endTime = previousEntry
-    .add({ minutes: conf.intervalInMinutes * 100 })
+    .add({ minutes: conf.intervalInMinutes })
     .toLocaleString(locale);
   const data = encoder.encode(`\n\n${startTime} - ${endTime}:   ${text}`);
   await Deno.writeFile(conf.logFilepath, data, { append: true, create: true });
@@ -49,7 +49,7 @@ async function addTodaysHeader(today: string) {
 
 async function askForEntry(previousEntry: Temporal.PlainTime) {
   const now = Temporal.Now;
-  const today = now.plainDate("iso8601").toLocaleString(conf.locale);
+  const today = now.plainDateISO().toLocaleString(conf.locale);
   await addTodaysHeader(today);
   notify();
   const text = prompt("📝");
@@ -68,12 +68,9 @@ function setupTimer() {
 
 if (import.meta.main) {
   const timer = setupTimer();
-  setInterval(
-    () => {
-      askForEntry(timer.previousEntry);
-      notify();
-      timer.reset();
-    },
-    conf.intervalInMinutes * 60 * 1000,
-  );
+  setInterval(() => {
+    askForEntry(timer.previousEntry);
+    notify();
+    timer.reset();
+  }, 1);
 }
