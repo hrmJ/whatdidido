@@ -68,9 +68,12 @@ function setupTimer() {
 
 if (import.meta.main) {
   const timer = setupTimer();
-  setInterval(() => {
-    askForEntry(timer.previousEntry);
-    notify();
-    timer.reset();
-  }, 1);
+  setInterval(
+    () => {
+      askForEntry(timer.previousEntry);
+      notify();
+      timer.reset();
+    },
+    conf.intervalInMinutes * 60 * 1000,
+  );
 }
